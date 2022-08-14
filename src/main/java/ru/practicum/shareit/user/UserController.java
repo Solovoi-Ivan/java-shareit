@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exceptions.DuplicateEntryException;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -34,7 +35,8 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto update(@Valid @RequestBody UserDto user, @PathVariable int userId) {
-        return userService.update(userId, user);
+        user.setId(getById(userId).getId());
+        return userService.update(user);
     }
 
     @DeleteMapping("/{userId}")
@@ -51,6 +53,12 @@ public class UserController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleFailedDuplicateValidation(final DuplicateEntryException e) {
+        return Map.of("error", "NOT VALID", "message", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleNotFoundValidation(final NotFoundException e) {
         return Map.of("error", "NOT VALID", "message", e.getMessage());
     }
 }

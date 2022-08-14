@@ -4,8 +4,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
 
-public interface ItemRepository {
-    List<ItemDto> getByOwner(int ownerId);
+public interface ItemService {
+    List<ItemDto> getByOwner(int userId);
     ItemDto getById(int itemId);
     List<ItemDto> search(String query);
     ItemDto create(int ownerId, ItemDto item);

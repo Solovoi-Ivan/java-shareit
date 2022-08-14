@@ -32,7 +32,8 @@ public class UserRepositoryInMemory implements UserRepository {
     }
 
     @Override
-    public UserDto update(int userId, UserDto user) {
+    public UserDto update(UserDto user) {
+        int userId = user.getId();
         if (user.getName() != null) {
             userMap.get(userId).setName(user.getName());
         }

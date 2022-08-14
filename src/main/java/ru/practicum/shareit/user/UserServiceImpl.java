@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.DuplicateEntryException;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -20,7 +21,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getById(int userId) {
-        return userRepository.getById(userId);
+        for (UserDto user : getAll()) {
+            if (userId == user.getId()) {
+                return userRepository.getById(userId);
+            }
+        }
+        throw new NotFoundException("Пользователь с указанным id не найден");
     }
 
     @Override
@@ -30,8 +36,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(int userId, UserDto user) {
-        return userRepository.update(userId, duplicateEmailValidation(user));
+    public UserDto update(UserDto user) {
+        return userRepository.update(duplicateEmailValidation(user));
     }
 
     @Override
