@@ -2,51 +2,127 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserRepository;
 
+import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
+    private final ItemMapper mapper;
+    private final CommentMapper commentMapper;
 
     @Override
-    public List<ItemDto> getByOwner(int ownerId) {
-        return itemRepository.getByOwner(ownerId);
+    public List<ItemDtoOutWithBooking> getByOwner(int ownerId) {
+        return itemRepository.findAll().stream()
+                .filter(i -> i.getOwner().getId() == ownerId)
+                .sorted(Comparator.comparingInt(Item::getId))
+                .map(this::addBookingInfo)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public ItemDto getById(int itemId) {
-        return itemRepository.getById(itemId);
+    public ItemDtoOutWithBooking getById(int itemId, int ownerId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Вещь не найдена"));
+        ItemDtoOutWithBooking itemDto = addBookingInfo(item);
+        if (!item.getOwner().getId().equals(ownerId)) {
+            itemDto.setLastBooking(null);
+            itemDto.setNextBooking(null);
+        }
+        return itemDto;
     }
 
     @Override
-    public List<ItemDto> search(String text) {
-        return itemRepository.search(text);
+    public List<ItemDtoOut> search(String text) {
+        if (text.isBlank()) {
+            return new ArrayList<>();
+        }
+        return itemRepository.search(text).stream()
+                .map(mapper::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public ItemDto create(int ownerId, ItemDto item) {
-        fieldsValidation(item);
-        return itemRepository.create(ownerId, item);
+    public ItemDtoOut create(int ownerId, ItemDtoIn item) {
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new RuntimeException("Неверно указан пользователь"));
+        return mapper.fromEntity(itemRepository.save(mapper.toEntity(item, user)));
     }
 
     @Override
-    public ItemDto update(int ownerId, ItemDto item) {
-        return itemRepository.update(ownerId, item);
+    public ItemDtoOut update(int ownerId, ItemDtoIn item) {
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new RuntimeException("Неверно указан пользователь"));
+        int itemId = item.getId();
+        Item i = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Вещь не найдена"));
+        if (!i.getOwner().equals(user)) {
+            throw new EntityNotFoundException("Вещь, принадлежащая данному пользователю, не найдена");
+        }
+        if (item.getName() != null) {
+            if (item.getName().isBlank()) {
+                throw new ValidationException("У вещи пустое имя");
+            }
+            i.setName(item.getName());
+        }
+        if (item.getDescription() != null) {
+            if (item.getDescription().isBlank()) {
+                throw new ValidationException("У вещи пустое описание");
+            }
+            i.setDescription(item.getDescription());
+        }
+        if (item.getAvailable() != null) {
+            i.setAvailable(item.getAvailable());
+        }
+        return mapper.fromEntity(itemRepository.save(i));
     }
 
     @Override
     public void delete(int itemId) {
-        itemRepository.delete(itemId);
+        itemRepository.deleteById(itemId);
     }
 
-    public void fieldsValidation(ItemDto item) {
-        if (item.getName() == null || item.getDescription() == null || item.getAvailable() == null ||
-                item.getName().isBlank() || item.getDescription().isBlank()) {
-            throw new ValidationException("У предмета не указано название, описание или статус");
+    @Override
+    public CommentDtoOut addComment(CommentDtoIn comment, int itemId, int userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Вещь не найдена"));
+        List<Booking> list = bookingRepository.findAll().stream()
+                .filter(b -> b.getItem().equals(item))
+                .filter(b -> b.getBooker().equals(user))
+                .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
+                .collect(Collectors.toList());
+        if (list.isEmpty()) {
+            throw new ValidationException("Вы не пользовались этой вещью");
         }
+        return commentMapper.fromEntity(commentRepository.save(commentMapper.toEntity(comment, item, user)));
+    }
+
+    public ItemDtoOutWithBooking addBookingInfo(Item item) {
+        LocalDateTime now = LocalDateTime.now();
+        Booking lastBooking = bookingRepository.getLastBooking(item.getId(), now);
+        Booking nextBooking = bookingRepository.getNextBooking(item.getId(), now);
+        List<CommentDtoOut> comment = commentRepository.findAll().stream()
+                .filter(c -> c.getItem().equals(item))
+                .map(commentMapper::fromEntity)
+                .collect(Collectors.toList());
+        return mapper.fromEntityAddBookings(item, lastBooking, nextBooking, comment);
     }
 }
