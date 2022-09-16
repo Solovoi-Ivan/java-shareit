@@ -106,23 +106,35 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
             case ALL:
-                return list.stream().map(mapper::fromEntity).collect(Collectors.toList());
+                return list.stream()
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
             case CURRENT:
-                return list.stream().filter(b -> b.getStart().isBefore(now))
+                return list.stream()
+                        .filter(b -> b.getStart().isBefore(now))
                         .filter(i -> i.getEnd().isAfter(now))
-                        .map(mapper::fromEntity).collect(Collectors.toList());
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
             case PAST:
-                return list.stream().filter(b -> b.getEnd().isBefore(now))
-                        .map(mapper::fromEntity).collect(Collectors.toList());
+                return list.stream()
+                        .filter(b -> b.getEnd().isBefore(now))
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
             case FUTURE:
-                return list.stream().filter(b -> b.getStart().isAfter(now))
-                        .map(mapper::fromEntity).collect(Collectors.toList());
+                return list.stream()
+                        .filter(b -> b.getStart().isAfter(now))
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
             case WAITING:
-                return list.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING))
-                        .map(mapper::fromEntity).collect(Collectors.toList());
+                return list.stream()
+                        .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
             case REJECTED:
-                return list.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
-                        .map(mapper::fromEntity).collect(Collectors.toList());
+                return list.stream()
+                        .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
             default:
                 throw new ValidationException("Неверный параметр state");
         }

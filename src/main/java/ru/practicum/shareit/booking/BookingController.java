@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.BookingDtoOut;
@@ -9,6 +10,7 @@ import ru.practicum.shareit.exceptions.UnsupportedStateException;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
@@ -18,24 +20,28 @@ public class BookingController {
 
     @PostMapping
     public BookingDtoOut addBooking(@RequestBody BookingDtoIn booking, @RequestHeader(USER_ID) int userId) {
+        log.info("Обработан POST-запрос (/bookings)");
         return bookingService.addBooking(booking, userId);
     }
 
     @PatchMapping("{bookingId}")
     public BookingDtoOut approveBooking(@RequestHeader(USER_ID) int ownerId, @PathVariable int bookingId,
                                         @RequestParam Boolean approved) {
+        log.info("Обработан PATCH-запрос (/bookings/" + bookingId + ")");
         return bookingService.approveBooking(ownerId, bookingId, approved);
     }
 
     @GetMapping("{bookingId}")
     public BookingDtoOut getBookingById(@RequestHeader(USER_ID) int userId,
                                         @PathVariable int bookingId) {
+        log.info("Обработан GET-запрос (/bookings/" + bookingId + ")");
         return bookingService.getBookingById(userId, bookingId);
     }
 
     @GetMapping
     public List<BookingDtoOut> getBookingByBooker(@RequestHeader(USER_ID) int bookerId,
                                                   @RequestParam(defaultValue = "ALL") String state) {
+        log.info("Обработан GET-запрос (/bookings&state="+ state +")");
         BookingState bookingState;
         try {
             bookingState = BookingState.valueOf(state.toUpperCase());
@@ -48,6 +54,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDtoOut> getBookingByOwner(@RequestHeader(USER_ID) int ownerId,
                                                  @RequestParam(defaultValue = "ALL") String state) {
+        log.info("Обработан GET-запрос (/bookings/owner&state="+ state + ")");
         BookingState bookingState;
         try {
             bookingState = BookingState.valueOf(state.toUpperCase());
