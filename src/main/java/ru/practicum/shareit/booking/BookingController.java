@@ -41,7 +41,7 @@ public class BookingController {
     @GetMapping
     public List<BookingDtoOut> getBookingByBooker(@RequestHeader(USER_ID) int bookerId,
                                                   @RequestParam(defaultValue = "ALL") String state) {
-        log.info("Обработан GET-запрос (/bookings&state="+ state +")");
+        log.info("Обработан GET-запрос (/bookings&state=" + state + ")");
         BookingState bookingState;
         try {
             bookingState = BookingState.valueOf(state.toUpperCase());
@@ -54,7 +54,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDtoOut> getBookingByOwner(@RequestHeader(USER_ID) int ownerId,
                                                  @RequestParam(defaultValue = "ALL") String state) {
-        log.info("Обработан GET-запрос (/bookings/owner&state="+ state + ")");
+        log.info("Обработан GET-запрос (/bookings/owner&state=" + state + ")");
         BookingState bookingState;
         try {
             bookingState = BookingState.valueOf(state.toUpperCase());
