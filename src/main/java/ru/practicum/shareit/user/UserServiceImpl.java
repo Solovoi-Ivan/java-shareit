@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -16,8 +17,11 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
 
     @Override
-    public List<UserDto> getAll() {
-        return userRepository.findAll().stream().map(mapper::fromEntity).collect(Collectors.toList());
+    public List<UserDto> getAll(PageRequest pageRequest) {
+        return userRepository.findAll(pageRequest)
+                .stream()
+                .map(mapper::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Override

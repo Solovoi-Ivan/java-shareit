@@ -1,7 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.BookingDtoOut;
@@ -72,25 +72,17 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoOut> getBookingByBooker(int bookerId, BookingState state) {
+    public List<BookingDtoOut> getBookingByBooker(int bookerId, BookingState state, PageRequest pageRequest) {
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
-        List<Booking> list = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "start"))
-                .stream()
-                .filter(b -> b.getBooker().equals(booker))
-                .collect(Collectors.toList());
-        return bookingByState(list, state);
+        return bookingByState(bookingRepository.findByBooker(booker, pageRequest), state);
     }
 
     @Override
-    public List<BookingDtoOut> getBookingByOwner(int ownerId, BookingState state) {
+    public List<BookingDtoOut> getBookingByOwner(int ownerId, BookingState state, PageRequest pageRequest) {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
-        List<Booking> list = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "start"))
-                .stream()
-                .filter(b -> b.getItem().getOwner().equals(owner))
-                .collect(Collectors.toList());
-        return bookingByState(list, state);
+        return bookingByState(bookingRepository.findByOwner(owner, pageRequest), state);
     }
 
     public void bookingValidation(LocalDateTime start, LocalDateTime end) {

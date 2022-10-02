@@ -2,15 +2,21 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.booking.dto.BookingDtoOut;
 import ru.practicum.shareit.util.BookingState;
 import ru.practicum.shareit.exceptions.UnsupportedStateException;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
@@ -27,7 +33,7 @@ public class BookingController {
     @PatchMapping("{bookingId}")
     public BookingDtoOut approveBooking(@RequestHeader(USER_ID) int ownerId, @PathVariable int bookingId,
                                         @RequestParam Boolean approved) {
-        log.info("Обработан PATCH-запрос (/bookings/" + bookingId + ")");
+        log.info("Обработан PATCH-запрос (/bookings/" + bookingId + "?approved=" + approved + ")");
         return bookingService.approveBooking(ownerId, bookingId, approved);
     }
 
@@ -39,8 +45,11 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<BookingDtoOut> getBookingByBooker(@RequestHeader(USER_ID) int bookerId,
-                                                  @RequestParam(defaultValue = "ALL") String state) {
+    public List<BookingDtoOut> getBookingByBooker(
+            @RequestHeader(USER_ID) int bookerId,
+            @RequestParam(defaultValue = "ALL") String state,
+            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+            @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Обработан GET-запрос (/bookings&state=" + state + ")");
         BookingState bookingState;
         try {
@@ -48,12 +57,16 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             throw new UnsupportedStateException("Unknown state: " + state.toUpperCase());
         }
-        return bookingService.getBookingByBooker(bookerId, bookingState);
+        return bookingService.getBookingByBooker(bookerId, bookingState,
+                PageRequest.of(from / size, size, Sort.by("start").descending()));
     }
 
     @GetMapping("/owner")
-    public List<BookingDtoOut> getBookingByOwner(@RequestHeader(USER_ID) int ownerId,
-                                                 @RequestParam(defaultValue = "ALL") String state) {
+    public List<BookingDtoOut> getBookingByOwner(
+            @RequestHeader(USER_ID) int ownerId,
+            @RequestParam(defaultValue = "ALL") String state,
+            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+            @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Обработан GET-запрос (/bookings/owner&state=" + state + ")");
         BookingState bookingState;
         try {
@@ -61,6 +74,7 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             throw new UnsupportedStateException("Unknown state: " + state.toUpperCase());
         }
-        return bookingService.getBookingByOwner(ownerId, bookingState);
+        return bookingService.getBookingByOwner(ownerId, bookingState,
+                PageRequest.of(from / size, size, Sort.by("start").descending()));
     }
 }

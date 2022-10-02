@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -12,7 +13,6 @@ import ru.practicum.shareit.user.UserRepository;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,10 +27,9 @@ public class ItemServiceImpl implements ItemService {
     private final CommentMapper commentMapper;
 
     @Override
-    public List<ItemDtoOutWithBooking> getByOwner(int ownerId) {
-        return itemRepository.findAll().stream()
-                .filter(i -> i.getOwner().getId() == ownerId)
-                .sorted(Comparator.comparingInt(Item::getId))
+    public List<ItemDtoOutWithBooking> getByOwner(int ownerId, PageRequest pageRequest) {
+        return itemRepository.findByOwnerId(ownerId, pageRequest)
+                .stream()
                 .map(this::addBookingInfo)
                 .collect(Collectors.toList());
     }
@@ -48,11 +47,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoOut> search(String text) {
+    public List<ItemDtoOut> search(String text, PageRequest pageRequest) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemRepository.search(text).stream()
+        return itemRepository.search(text, pageRequest).stream()
                 .map(mapper::fromEntity)
                 .collect(Collectors.toList());
     }

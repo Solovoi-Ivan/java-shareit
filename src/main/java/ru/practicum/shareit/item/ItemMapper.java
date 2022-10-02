@@ -16,8 +16,12 @@ import java.util.List;
 @AllArgsConstructor
 public class ItemMapper {
     public Item toEntity(ItemDtoIn item, User owner) {
-        return new Item(item.getName(), item.getDescription(),
+        Item i = new Item(item.getName(), item.getDescription(),
                 item.getAvailable(), owner);
+        if (item.getRequestId() != null) {
+            i.setRequestId(item.getRequestId());
+        }
+        return i;
     }
 
     public ItemDtoOut fromEntity(Item item) {
