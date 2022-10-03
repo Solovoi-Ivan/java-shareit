@@ -29,13 +29,14 @@ public class ItemController {
             @RequestHeader(USER_ID) int userId,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
             @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Обработан GET-запрос (/items)");
+        log.info("Обработан GET-запрос (/items" + "?from=" + from + "&size=" + size +
+                ") для пользователя " + userId);
         return itemService.getByOwner(userId, PageRequest.of(from / size, size, Sort.by("id")));
     }
 
     @GetMapping("{itemId}")
     public ItemDtoOutWithBooking getById(@PathVariable int itemId, @RequestHeader(USER_ID) int userId) {
-        log.info("Обработан GET-запрос (/items/" + userId + ")");
+        log.info("Обработан GET-запрос (/items/" + userId + ") для пользователя " + userId);
         return itemService.getById(itemId, userId);
     }
 
@@ -43,21 +44,21 @@ public class ItemController {
     public List<ItemDtoOut> search(@RequestParam String text,
                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
                                    @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Обработан GET-запрос (/search?text=" + text + ")");
+        log.info("Обработан GET-запрос (/search?text=" + text + "&from=" + from + "&size=" + size + ")");
         return itemService.search(text, PageRequest.of(from / size, size, Sort.by("id")));
     }
 
     @PostMapping
     public ItemDtoOut create(@Validated(Create.class) @RequestBody ItemDtoIn item,
                              @RequestHeader(USER_ID) int userId) {
-        log.info("Обработан POST-запрос (/items)");
+        log.info("Обработан POST-запрос (/items) для пользователя " + userId);
         return itemService.create(userId, item);
     }
 
     @PatchMapping("{itemId}")
     public ItemDtoOut update(@Validated(Update.class) @RequestBody ItemDtoIn item, @PathVariable int itemId,
                              @RequestHeader(USER_ID) int userId) {
-        log.info("Обработан PATCH-запрос (/items/" + itemId + ")");
+        log.info("Обработан PATCH-запрос (/items/" + itemId + ") для пользователя " + userId);
         item.setId(itemId);
         return itemService.update(userId, item);
     }
@@ -72,7 +73,7 @@ public class ItemController {
     public CommentDtoOut addComment(@Valid @RequestBody CommentDtoIn comment,
                                     @RequestHeader(USER_ID) int userId,
                                     @PathVariable int itemId) {
-        log.info("Обработан POST-запрос (/items/" + itemId + "/comment)");
+        log.info("Обработан POST-запрос (/items/" + itemId + "/comment) для пользователя " + userId);
         return itemService.addComment(comment, itemId, userId);
     }
 }

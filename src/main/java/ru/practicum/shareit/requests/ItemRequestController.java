@@ -27,13 +27,13 @@ public class ItemRequestController {
     @PostMapping
     public ItemRequestDtoOut create(@Valid @RequestBody ItemRequestDtoIn item,
                                     @RequestHeader(USER_ID) int requesterId) {
-        log.info("Обработан POST-запрос (/requests)");
+        log.info("Обработан POST-запрос (/requests) для пользователя " + requesterId);
         return itemRequestService.create(item, requesterId);
     }
 
     @GetMapping
     public List<ItemRequestDtoOut> getByRequester(@RequestHeader(USER_ID) int requesterId) {
-        log.info("Обработан GET-запрос (/requests)");
+        log.info("Обработан GET-запрос (/requests) для пользователя " + requesterId);
         return itemRequestService.getByRequester(requesterId);
     }
 
@@ -42,12 +42,15 @@ public class ItemRequestController {
             @RequestHeader(USER_ID) int userId,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
             @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        log.info("Обработан GET-запрос (/requests/all" + "?from=" + from + "&size=" + size +
+                ") для пользователя " + userId);
         return itemRequestService.getAll(userId,
                 PageRequest.of(from / size, size, Sort.by("creationDate")));
     }
 
     @GetMapping("{requestId}")
     public ItemRequestDtoOut getById(@PathVariable int requestId, @RequestHeader(USER_ID) int userId) {
+        log.info("Обработан GET-запрос (/requests/" + requestId + ") для пользователя " + userId);
         return itemRequestService.getById(requestId, userId);
     }
 }

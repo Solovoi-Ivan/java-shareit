@@ -26,21 +26,22 @@ public class BookingController {
 
     @PostMapping
     public BookingDtoOut addBooking(@RequestBody BookingDtoIn booking, @RequestHeader(USER_ID) int userId) {
-        log.info("Обработан POST-запрос (/bookings)");
+        log.info("Обработан POST-запрос (/bookings) для пользователя " + userId);
         return bookingService.addBooking(booking, userId);
     }
 
     @PatchMapping("{bookingId}")
     public BookingDtoOut approveBooking(@RequestHeader(USER_ID) int ownerId, @PathVariable int bookingId,
                                         @RequestParam Boolean approved) {
-        log.info("Обработан PATCH-запрос (/bookings/" + bookingId + "?approved=" + approved + ")");
+        log.info("Обработан PATCH-запрос (/bookings/" + bookingId + "?approved=" + approved + ") " +
+                "для пользователя " + ownerId);
         return bookingService.approveBooking(ownerId, bookingId, approved);
     }
 
     @GetMapping("{bookingId}")
     public BookingDtoOut getBookingById(@RequestHeader(USER_ID) int userId,
                                         @PathVariable int bookingId) {
-        log.info("Обработан GET-запрос (/bookings/" + bookingId + ")");
+        log.info("Обработан GET-запрос (/bookings/" + bookingId + ") для пользователя " + userId);
         return bookingService.getBookingById(userId, bookingId);
     }
 
@@ -50,7 +51,8 @@ public class BookingController {
             @RequestParam(defaultValue = "ALL") String state,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
             @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Обработан GET-запрос (/bookings&state=" + state + ")");
+        log.info("Обработан GET-запрос (/bookings&state=" + state +
+                "&from=" + from + "&size=" + size + ") для пользователя " + bookerId);
         BookingState bookingState;
         try {
             bookingState = BookingState.valueOf(state.toUpperCase());
@@ -67,7 +69,8 @@ public class BookingController {
             @RequestParam(defaultValue = "ALL") String state,
             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
             @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Обработан GET-запрос (/bookings/owner&state=" + state + ")");
+        log.info("Обработан GET-запрос (/bookings/owner&state=" + state +
+                "&from=" + from + "&size=" + size + ") для пользователя " + ownerId);
         BookingState bookingState;
         try {
             bookingState = BookingState.valueOf(state.toUpperCase());
