@@ -1,62 +1,59 @@
 package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.DuplicateEntryException;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper mapper;
 
     @Override
-    public List<UserDto> getAll() {
-        return userRepository.getAll();
+    public List<UserDto> getAll(PageRequest pageRequest) {
+        return userRepository.findAll(pageRequest)
+                .stream()
+                .map(mapper::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Override
     public UserDto getById(int userId) {
-        for (UserDto user : getAll()) {
-            if (userId == user.getId()) {
-                return userRepository.getById(userId);
-            }
-        }
-        throw new NotFoundException("Пользователь с указанным id не найден");
+        return mapper.fromEntity(userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден")));
     }
 
     @Override
     public UserDto create(UserDto user) {
-        fieldsValidation(user);
-        return userRepository.create(duplicateEmailValidation(user));
+        return mapper.fromEntity(userRepository.save(mapper.toEntity(user)));
     }
 
     @Override
     public UserDto update(UserDto user) {
-        return userRepository.update(duplicateEmailValidation(user));
+        int userId = user.getId();
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+        if (user.getName() != null) {
+            if (user.getName().isBlank()) {
+                throw new ValidationException("У пользователя пустое имя");
+            }
+            u.setName(user.getName());
+        }
+        if (user.getEmail() != null) {
+            u.setEmail(user.getEmail());
+        }
+        return mapper.fromEntity(userRepository.save(u));
     }
 
     @Override
     public void delete(int userId) {
-        userRepository.delete(userId);
-    }
-
-    public UserDto duplicateEmailValidation(UserDto user) {
-        for (UserDto userDto : userRepository.getAll()) {
-            if (user.getEmail() != null && userDto.getEmail().equals(user.getEmail())) {
-                throw new DuplicateEntryException("Пользователь с таким email уже существует");
-            }
-        }
-        return user;
-    }
-
-    public void fieldsValidation(UserDto user) {
-        if (user.getName() == null || user.getEmail() == null) {
-            throw new ValidationException("У пользователя не указано имя или email");
-        }
+        userRepository.deleteById(userId);
     }
 }

@@ -1,19 +1,22 @@
 package ru.practicum.shareit.item;
 
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.springframework.data.domain.PageRequest;
+import ru.practicum.shareit.item.dto.*;
 
 import java.util.List;
 
 public interface ItemService {
-    List<ItemDto> getByOwner(int userId);
+    List<ItemDtoOutWithBooking> getByOwner(int ownerId, PageRequest pageRequest);
 
-    ItemDto getById(int itemId);
+    ItemDtoOutWithBooking getById(int itemId, int userId);
 
-    List<ItemDto> search(String query);
+    List<ItemDtoOut> search(String text, PageRequest pageRequest);
 
-    ItemDto create(int ownerId, ItemDto item);
+    ItemDtoOut create(int ownerId/*UserDto owner*/, ItemDtoIn item);
 
-    ItemDto update(int ownerId, ItemDto item);
+    ItemDtoOut update(int ownerId, ItemDtoIn item);
 
     void delete(int itemId);
+
+    CommentDtoOut addComment(CommentDtoIn comment, int itemId, int userId);
 }
