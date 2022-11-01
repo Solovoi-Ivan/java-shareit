@@ -27,7 +27,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper mapper;
 
     @Override
-    public BookingDtoOut addBooking(BookingDtoIn b, int userId) {
+    public BookingDtoOut create(BookingDtoIn b, int userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         Item item = itemRepository.findById(b.getItemId())
@@ -44,7 +44,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDtoOut approveBooking(int ownerId, int bookingId, Boolean isApproved) {
+    public BookingDtoOut approve(int ownerId, int bookingId, Boolean isApproved) {
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new EntityNotFoundException("Бронь не найдена"));
         if (!b.getItem().getOwner().getId().equals(ownerId)) {
@@ -61,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDtoOut getBookingById(int userId, int bookingId) {
+    public BookingDtoOut getById(int userId, int bookingId) {
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new EntityNotFoundException("Бронь не найдена"));
         if (b.getBooker().getId().equals(userId) || b.getItem().getOwner().getId().equals(userId)) {
@@ -72,14 +72,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoOut> getBookingByBooker(int bookerId, BookingState state, PageRequest pageRequest) {
+    public List<BookingDtoOut> getByBooker(int bookerId, BookingState state, PageRequest pageRequest) {
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         return bookingByState(bookingRepository.findByBooker(booker, pageRequest), state);
     }
 
     @Override
-    public List<BookingDtoOut> getBookingByOwner(int ownerId, BookingState state, PageRequest pageRequest) {
+    public List<BookingDtoOut> getByOwner(int ownerId, BookingState state, PageRequest pageRequest) {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         return bookingByState(bookingRepository.findByOwner(owner, pageRequest), state);

@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookItemDtoIn {
+public class BookingDtoIn {
 	private long itemId;
 	@FutureOrPresent
 	private LocalDateTime start;

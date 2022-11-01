@@ -61,15 +61,15 @@ class BookingServiceImplTest {
         when(userRepository.findById(1)).thenReturn(Optional.of(booker));
         when(bookingRepository.save(any())).thenReturn(booking);
 
-        assertThrows(EntityNotFoundException.class, () -> bookingService.addBooking(bookingDtoIn, 3));
-        assertThrows(EntityNotFoundException.class, () -> bookingService.addBooking(bookingDtoIn, 2));
+        assertThrows(EntityNotFoundException.class, () -> bookingService.create(bookingDtoIn, 3));
+        assertThrows(EntityNotFoundException.class, () -> bookingService.create(bookingDtoIn, 2));
 
         bookingDtoIn.setItemId(2);
 
-        assertThrows(EntityNotFoundException.class, () -> bookingService.addBooking(bookingDtoIn, 1));
+        assertThrows(EntityNotFoundException.class, () -> bookingService.create(bookingDtoIn, 1));
 
         bookingDtoIn.setItemId(1);
-        BookingDtoOut testBooking = bookingService.addBooking(bookingDtoIn, 1);
+        BookingDtoOut testBooking = bookingService.create(bookingDtoIn, 1);
 
         assertNotNull(testBooking);
         assertEquals(testBooking, mapper.fromEntity(booking));
@@ -83,17 +83,17 @@ class BookingServiceImplTest {
         when(bookingRepository.save(booking)).thenReturn(booking);
 
         assertThrows(EntityNotFoundException.class,
-                () -> bookingService.approveBooking(1, 2, true));
+                () -> bookingService.approve(1, 2, true));
         assertThrows(EntityNotFoundException.class,
-                () -> bookingService.approveBooking(2, 1, true));
+                () -> bookingService.approve(2, 1, true));
 
         booking.setStatus(BookingStatus.APPROVED);
 
         assertThrows(ValidationException.class,
-                () -> bookingService.approveBooking(1, 1, true));
+                () -> bookingService.approve(1, 1, true));
 
         booking.setStatus(BookingStatus.WAITING);
-        BookingDtoOut testBooking = bookingService.approveBooking(1, 1, true);
+        BookingDtoOut testBooking = bookingService.approve(1, 1, true);
 
         assertNotNull(testBooking);
         assertEquals(testBooking, mapper.fromEntity(booking));
@@ -106,12 +106,12 @@ class BookingServiceImplTest {
         when(bookingRepository.findById(1)).thenReturn(Optional.of(booking));
 
         assertThrows(EntityNotFoundException.class,
-                () -> bookingService.getBookingById(1, 2));
+                () -> bookingService.getById(1, 2));
 
         assertThrows(EntityNotFoundException.class,
-                () -> bookingService.getBookingById(3, 1));
+                () -> bookingService.getById(3, 1));
 
-        BookingDtoOut testBooking = bookingService.getBookingById(1, 1);
+        BookingDtoOut testBooking = bookingService.getById(1, 1);
 
         assertNotNull(testBooking);
         assertEquals(testBooking, mapper.fromEntity(booking));
@@ -126,9 +126,9 @@ class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         assertThrows(EntityNotFoundException.class,
-                () -> bookingService.getBookingByBooker(2, BookingState.ALL, pageRequest));
+                () -> bookingService.getByBooker(2, BookingState.ALL, pageRequest));
 
-        List<BookingDtoOut> list = bookingService.getBookingByBooker(1, BookingState.ALL, pageRequest);
+        List<BookingDtoOut> list = bookingService.getByBooker(1, BookingState.ALL, pageRequest);
 
         assertNotNull(list);
         assertEquals(list.size(), 1);
@@ -144,36 +144,36 @@ class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         assertThrows(EntityNotFoundException.class,
-                () -> bookingService.getBookingByOwner(1, BookingState.ALL, pageRequest));
+                () -> bookingService.getByOwner(1, BookingState.ALL, pageRequest));
 
-        List<BookingDtoOut> list = bookingService.getBookingByOwner(2, BookingState.ALL, pageRequest);
-
-        assertNotNull(list);
-        assertEquals(list.size(), 1);
-        assertEquals(list.get(0), mapper.fromEntity(booking));
-
-        list = bookingService.getBookingByOwner(2, BookingState.CURRENT, pageRequest);
-
-        assertNotNull(list);
-        assertEquals(list.size(), 0);
-
-        list = bookingService.getBookingByOwner(2, BookingState.PAST, pageRequest);
-
-        assertNotNull(list);
-        assertEquals(list.size(), 0);
-
-        list = bookingService.getBookingByOwner(2, BookingState.FUTURE, pageRequest);
+        List<BookingDtoOut> list = bookingService.getByOwner(2, BookingState.ALL, pageRequest);
 
         assertNotNull(list);
         assertEquals(list.size(), 1);
         assertEquals(list.get(0), mapper.fromEntity(booking));
 
-        list = bookingService.getBookingByOwner(2, BookingState.WAITING, pageRequest);
+        list = bookingService.getByOwner(2, BookingState.CURRENT, pageRequest);
 
         assertNotNull(list);
         assertEquals(list.size(), 0);
 
-        list = bookingService.getBookingByOwner(2, BookingState.REJECTED, pageRequest);
+        list = bookingService.getByOwner(2, BookingState.PAST, pageRequest);
+
+        assertNotNull(list);
+        assertEquals(list.size(), 0);
+
+        list = bookingService.getByOwner(2, BookingState.FUTURE, pageRequest);
+
+        assertNotNull(list);
+        assertEquals(list.size(), 1);
+        assertEquals(list.get(0), mapper.fromEntity(booking));
+
+        list = bookingService.getByOwner(2, BookingState.WAITING, pageRequest);
+
+        assertNotNull(list);
+        assertEquals(list.size(), 0);
+
+        list = bookingService.getByOwner(2, BookingState.REJECTED, pageRequest);
 
         assertNotNull(list);
         assertEquals(list.size(), 0);

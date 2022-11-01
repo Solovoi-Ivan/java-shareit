@@ -43,7 +43,7 @@ class BookingControllerTest {
         BookingDtoOut bookingDtoOut = new BookingDtoOut(1, null, null,
                 null, null, BookingStatus.WAITING);
 
-        when(bookingService.addBooking(bookingDtoIn, 1)).thenReturn(bookingDtoOut);
+        when(bookingService.create(bookingDtoIn, 1)).thenReturn(bookingDtoOut);
 
         mockMvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1)
@@ -61,7 +61,7 @@ class BookingControllerTest {
                         "\t\"status\": \"WAITING\"\n" +
                         "}"));
 
-        verify(bookingService, times(1)).addBooking(bookingDtoIn, 1);
+        verify(bookingService, times(1)).create(bookingDtoIn, 1);
     }
 
     @Test
@@ -69,7 +69,7 @@ class BookingControllerTest {
         BookingDtoOut bookingDtoOut = new BookingDtoOut(1, null, null,
                 null, null, BookingStatus.WAITING);
 
-        when(bookingService.approveBooking(1, 1, true)).thenReturn(bookingDtoOut);
+        when(bookingService.approve(1, 1, true)).thenReturn(bookingDtoOut);
 
         mockMvc.perform(patch("/bookings/1?approved=true")
                         .header("X-Sharer-User-Id", 1))
@@ -83,7 +83,7 @@ class BookingControllerTest {
                         "\t\"status\": \"WAITING\"\n" +
                         "}"));
 
-        verify(bookingService, times(1)).approveBooking(1, 1, true);
+        verify(bookingService, times(1)).approve(1, 1, true);
     }
 
     @Test
@@ -91,7 +91,7 @@ class BookingControllerTest {
         BookingDtoOut bookingDtoOut = new BookingDtoOut(1, null, null,
                 null, null, BookingStatus.WAITING);
 
-        when(bookingService.getBookingById(1, 1)).thenReturn(bookingDtoOut);
+        when(bookingService.getById(1, 1)).thenReturn(bookingDtoOut);
 
         mockMvc.perform(get("/bookings/1")
                         .header("X-Sharer-User-Id", 1))
@@ -105,17 +105,13 @@ class BookingControllerTest {
                         "\t\"status\": \"WAITING\"\n" +
                         "}"));
 
-        verify(bookingService, times(1)).getBookingById(1, 1);
+        verify(bookingService, times(1)).getById(1, 1);
     }
 
     @Test
     void getBookingByBookerTest() throws Exception {
-        when(bookingService.getBookingByBooker(1, BookingState.ALL, pageRequest))
+        when(bookingService.getByBooker(1, BookingState.ALL, pageRequest))
                 .thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/bookings?state=TEST")
-                        .header("X-Sharer-User-Id", 1))
-                .andExpect(status().is(500));
 
         mockMvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id", 1))
@@ -123,17 +119,13 @@ class BookingControllerTest {
                 .andExpect(content().json("[]"));
 
         verify(bookingService, times(1))
-                .getBookingByBooker(1, BookingState.ALL, pageRequest);
+                .getByBooker(1, BookingState.ALL, pageRequest);
     }
 
     @Test
     void getBookingByOwnerTest() throws Exception {
-        when(bookingService.getBookingByOwner(1, BookingState.ALL, pageRequest))
+        when(bookingService.getByOwner(1, BookingState.ALL, pageRequest))
                 .thenReturn(Collections.emptyList());
-
-        mockMvc.perform(get("/bookings/owner?state=TEST")
-                        .header("X-Sharer-User-Id", 1))
-                .andExpect(status().is(500));
 
         mockMvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1))
@@ -141,6 +133,6 @@ class BookingControllerTest {
                 .andExpect(content().json("[]"));
 
         verify(bookingService, times(1))
-                .getBookingByOwner(1, BookingState.ALL, pageRequest);
+                .getByOwner(1, BookingState.ALL, pageRequest);
     }
 }

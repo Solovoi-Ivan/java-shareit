@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.requests.dto.ItemRequestDtoIn;
 import ru.practicum.shareit.requests.dto.ItemRequestDtoOut;
 
-//import javax.validation.Valid;
-//import javax.validation.constraints.Positive;
-//import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -24,13 +21,6 @@ public class ItemRequestController {
 
     public final ItemRequestService itemRequestService;
 
-    @PostMapping
-    public ItemRequestDtoOut create(/*@Valid*/ @RequestBody ItemRequestDtoIn item,
-                                    @RequestHeader(USER_ID) int requesterId) {
-        log.info("Обработан POST-запрос (/requests) для пользователя " + requesterId);
-        return itemRequestService.create(item, requesterId);
-    }
-
     @GetMapping
     public List<ItemRequestDtoOut> getByRequester(@RequestHeader(USER_ID) int requesterId) {
         log.info("Обработан GET-запрос (/requests) для пользователя " + requesterId);
@@ -40,8 +30,8 @@ public class ItemRequestController {
     @GetMapping("/all")
     public List<ItemRequestDtoOut> getAll(
             @RequestHeader(USER_ID) int userId,
-            /*@PositiveOrZero*/ @RequestParam(name = "from", defaultValue = "0") int from,
-            /*@Positive*/ @RequestParam(name = "size", defaultValue = "10") int size) {
+            @RequestParam(name = "from", defaultValue = "0") int from,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Обработан GET-запрос (/requests/all" + "?from=" + from + "&size=" + size +
                 ") для пользователя " + userId);
         return itemRequestService.getAll(userId,
@@ -52,5 +42,12 @@ public class ItemRequestController {
     public ItemRequestDtoOut getById(@PathVariable int requestId, @RequestHeader(USER_ID) int userId) {
         log.info("Обработан GET-запрос (/requests/" + requestId + ") для пользователя " + userId);
         return itemRequestService.getById(requestId, userId);
+    }
+
+    @PostMapping
+    public ItemRequestDtoOut create(@RequestBody ItemRequestDtoIn itemRequest,
+                                    @RequestHeader(USER_ID) int requesterId) {
+        log.info("Обработан POST-запрос (/requests) для пользователя " + requesterId);
+        return itemRequestService.create(itemRequest, requesterId);
     }
 }

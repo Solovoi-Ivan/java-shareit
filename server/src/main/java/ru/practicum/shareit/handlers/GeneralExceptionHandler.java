@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.practicum.shareit.exceptions.UnsupportedStateException;
 import ru.practicum.shareit.exceptions.ValidationException;
 
 import javax.persistence.EntityNotFoundException;
@@ -23,11 +22,5 @@ public class GeneralExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleEntityNotFoundValidation(final EntityNotFoundException e) {
         return Map.of("error", "NOT VALID", "message", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleUnsupportedState(final UnsupportedStateException e) {
-        return Map.of("error", e.getMessage());
     }
 }
