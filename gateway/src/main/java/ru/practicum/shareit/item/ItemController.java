@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDtoIn;
 import ru.practicum.shareit.item.dto.ItemDtoIn;
 import ru.practicum.shareit.util.Create;
@@ -58,6 +59,18 @@ public class ItemController {
     public ResponseEntity<Object> update(@Validated(Update.class) @RequestBody ItemDtoIn item,
                                          @PathVariable long itemId, @RequestHeader(USER_ID) long userId) {
         log.info("Обработан PATCH-запрос (/items/" + itemId + ") для пользователя " + userId);
+        if (item.getName() != null) {
+            if (item.getName().isBlank()) {
+                throw new ValidationException("У вещи пустое имя");
+            }
+        }
+        if (item.getDescription() != null) {
+            if (item.getDescription().isBlank()) {
+                throw new ValidationException("У вещи пустое описание");
+            }
+        }
+
+
         return itemClient.update(userId, item, itemId);
     }
 

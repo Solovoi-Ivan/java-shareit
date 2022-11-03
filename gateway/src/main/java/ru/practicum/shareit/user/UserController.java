@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.util.Create;
 import ru.practicum.shareit.util.Update;
@@ -22,7 +23,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Object> getAll(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-            @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+                                         @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Обработан GET-запрос (/users&from=)" + from + "&size=" + size + ")");
         return userClient.getAll(from, size);
     }
@@ -42,6 +43,11 @@ public class UserController {
     @PatchMapping("/{userId}")
     public ResponseEntity<Object> update(@Validated(Update.class) @RequestBody UserDto user, @PathVariable int userId) {
         log.info("Обработан PATCH-запрос (/users/" + userId + ")");
+        if (user.getName() != null) {
+            if (user.getName().isBlank()) {
+                throw new ValidationException("У пользователя пустое имя");
+            }
+        }
         return userClient.update(user, userId);
     }
 

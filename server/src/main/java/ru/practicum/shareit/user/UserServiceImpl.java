@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.persistence.EntityNotFoundException;
@@ -41,9 +40,6 @@ public class UserServiceImpl implements UserService {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
         if (user.getName() != null) {
-            if (user.getName().isBlank()) {
-                throw new ValidationException("У пользователя пустое имя");
-            }
             u.setName(user.getName());
         }
         if (user.getEmail() != null) {

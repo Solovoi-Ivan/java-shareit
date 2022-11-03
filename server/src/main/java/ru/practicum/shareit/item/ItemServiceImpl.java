@@ -74,15 +74,9 @@ public class ItemServiceImpl implements ItemService {
             throw new EntityNotFoundException("Вещь, принадлежащая данному пользователю, не найдена");
         }
         if (item.getName() != null) {
-            if (item.getName().isBlank()) {
-                throw new ValidationException("У вещи пустое имя");
-            }
             i.setName(item.getName());
         }
         if (item.getDescription() != null) {
-            if (item.getDescription().isBlank()) {
-                throw new ValidationException("У вещи пустое описание");
-            }
             i.setDescription(item.getDescription());
         }
         if (item.getAvailable() != null) {

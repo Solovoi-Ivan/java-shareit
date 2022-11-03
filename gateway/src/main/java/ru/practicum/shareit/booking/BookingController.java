@@ -8,10 +8,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoIn;
 import ru.practicum.shareit.exceptions.UnsupportedStateException;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.util.BookingState;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Validated
@@ -66,6 +68,12 @@ public class BookingController {
     @PostMapping
     public ResponseEntity<Object> create(@RequestBody BookingDtoIn booking, @RequestHeader(USER_ID) long userId) {
         log.info("Обработан POST-запрос (/bookings) для пользователя " + userId);
+        if (booking.getStart().isBefore(LocalDateTime.now()) || booking.getEnd().isBefore(LocalDateTime.now())) {
+            throw new ValidationException("Время бронирования не может быть в прошлом");
+        }
+        if (booking.getEnd().isBefore(booking.getStart())) {
+            throw new ValidationException("Завершение бронирования не может быть позже начала");
+        }
         return bookingClient.create(userId, booking);
     }
 

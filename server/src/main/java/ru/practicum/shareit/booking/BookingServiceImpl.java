@@ -38,7 +38,6 @@ public class BookingServiceImpl implements BookingService {
         if (!item.getAvailable()) {
             throw new ValidationException("Вещь недоступна для бронирования");
         }
-        bookingValidation(b.getStart(), b.getEnd());
         return mapper.fromEntity(bookingRepository
                 .save(mapper.toEntity(b, item, user, BookingStatus.WAITING)));
     }
@@ -85,22 +84,9 @@ public class BookingServiceImpl implements BookingService {
         return bookingByState(bookingRepository.findByOwner(owner, pageRequest), state);
     }
 
-    public void bookingValidation(LocalDateTime start, LocalDateTime end) {
-        if (start.isBefore(LocalDateTime.now()) || end.isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Время бронирования не может быть в прошлом");
-        }
-        if (end.isBefore(start)) {
-            throw new ValidationException("Завершение бронирования не может быть позже начала");
-        }
-    }
-
     public List<BookingDtoOut> bookingByState(List<Booking> list, BookingState state) {
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
-            case ALL:
-                return list.stream()
-                        .map(mapper::fromEntity)
-                        .collect(Collectors.toList());
             case CURRENT:
                 return list.stream()
                         .filter(b -> b.getStart().isBefore(now))
@@ -128,7 +114,9 @@ public class BookingServiceImpl implements BookingService {
                         .map(mapper::fromEntity)
                         .collect(Collectors.toList());
             default:
-                throw new ValidationException("Неверный параметр state");
+                return list.stream()
+                        .map(mapper::fromEntity)
+                        .collect(Collectors.toList());
         }
     }
 }
